@@ -5,7 +5,7 @@
      List Products
     </p>
     </router-link>
-    <router-link class="link" to="/handleProduct">
+    <router-link class="link" to="/InsertProduct">
     <p class="item-menu">
       HandleProduct
     </p>

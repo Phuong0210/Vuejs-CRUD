@@ -1,16 +1,25 @@
 <template>
+  <div class="search-wrapper">
+    <v-switch
+      v-model="shouldFilterOnlyDeleted"
+      label="deleted"
+      color="orange"
+      hide-details
+    >
+    </v-switch>
+  </div>
   <div class="container">
     <v-table>
       <thead>
       <tr>
         <th class="text-left">
-          First Name
+         Name
         </th>
         <th class="text-left">
-          Last Name
+          Price
         </th>
         <th class="text-left">
-          Email
+          Description
         </th>
         <th class="text-left">
           Action
@@ -19,17 +28,17 @@
       </thead>
       <tbody>
       <tr
-          v-for="employee in filteredEmployees"
-          :key="employee.name"
+          v-for="product in filteredProducts"
+          :key="product.name"
       >
-        <td>{{ employee.firstName }}</td>
-        <td>{{ employee.lastName }}</td>
-        <td>{{ employee.email }}</td>
+        <td>{{ product.productName }}</td>
+        <td>{{ product.price }}</td>
+        <td>{{ product.description }}</td>
         <td>
           <v-btn
-              color="success"
+              color="blue"
               plain
-              @click="updateEmployee(employee.id)"
+              @click="updateProduct(product.id)"
           >
             Update
           </v-btn>
@@ -37,46 +46,11 @@
           <v-btn
               color="error"
               plain
-              @click="deleteEmployee(employee.id)"
+              @click="deleteProduct(product.id)"
           >
             Delete
           </v-btn>
         </td>
-      </tr>
-      </tbody>
-    </v-table>
-  </div>
-  <div class="search-wrapper">
-    <v-text-field type="text" v-model="search" placeholder="Search title.."/>
-    <label>Search title:</label>
-  </div>
-  <!--  <div class="switch">-->
-  <!--    <v-switch v-model="order" true-value="-1" false-value="0" label="Toggle order" ></v-switch>-->
-  <!--    <input class="form-control w-25" placeholder="Filter By first name" v-model="searchClient" type="search">-->
-  <!--  </div>-->
-  <div>
-    <v-table>
-      <thead>
-      <tr>
-        <th class="text-left">
-          First Name
-        </th>
-        <th class="text-left">
-          Last Name
-        </th>
-        <th class="text-left">
-          Email
-        </th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr
-          v-for="employee in filteredEmployees"
-          :key="employee.name"
-      >
-        <td>{{ employee.firstName }}</td>
-        <td>{{ employee.lastName }}</td>
-        <td>{{ employee.email }}</td>
       </tr>
       </tbody>
     </v-table>
@@ -86,66 +60,79 @@
 <script>
 import axios from 'axios'
 export default {
-  name: "ListProduct",
+  name: "ListProducts",
 
   data() {
     return {
-      updatingEmployee:{},
-      employees: [],
+      updatingProduct:{},
+      products: [],
       order: 0,
-      search:""
+      search:"",
+
+      shouldFilterOnlyDeleted: true,
     }
   },
   computed: {
-    filteredEmployees() {
-      if (!this.search) {
-        return this.employees;
-      } else {
-        return this.employees.filter(employee => {
-          return employee.firstName.toLowerCase().includes(this.search.toLowerCase())
-        })
+    filteredProducts() {
+      if (this.shouldFilterOnlyDeleted) {
+        return this.products.filter(product => product.isDeleted);
       }
-    }
-    // filteredList() {
-    //   return this.employees.filter(employee => {
-    //     return employee.firstName.toLowerCase().includes(this.search.toLowerCase()) || employee.lastName.toLowerCase().includes(this.search.toLowerCase()) || employee.email.toLowerCase().includes(this.search.toLowerCase())
-    //   })
+
+      return this.products;
+
+      // if (!this.search) {
+      //   return this.products;
+      // } else {
+      //   return this.products.filter(product => {
+      //      return product.productName.toLowerCase().includes(this.search.toLowerCase())
+      //   })
+      // }
+    },
+    // filterDeleted(){
+    //   if (!this.search) {
+    //     return this.products;
+    //   } else {
+    //     return(
+    //         axios.get("http://localhost:8090/api/v1/Products/Deleted"))
+    //   }
     // }
   },
   methods: {
     async show() {
-      await axios.get('http://localhost:8090/api/v1/employees')
+      await axios.get('http://localhost:8090/api/v1/Products')
           .then((response) => {
             console.log(response.data);
-            this.employees = response.data;
-            console.log('employees', this.employees);
+            this.products = response.data;
+            console.log('products', this.products);
           })
           .catch((error) => {
             console.log(error);
           });
     },
-    updateEmployee(id) {
+    updateProduct(id) {
       console.log('update')
       this.$router.push({
-        name: 'employee',
+        name: 'HandleProduct',
         params: {
-          employeeId: id,
+          id: id,
         }
       });
     },
 
-    deleteEmployee(id){
-      axios.delete(`http://localhost:8090/api/v1/employees/` +id)
+    deleteProduct(id){
+      if (window.confirm("Do you really want to delete?"))
+        axios.delete(`http://localhost:8090/api/v1/Products/` +id)
           .then(response => {
-            console.log(response);
+            this.show(response);
           });
-      this.show();
+
     },
   },
   ///
-  updatingEmployee(id) {
-    this.$emit('update-employee', id);
+  updatingProduct(id) {
+    this.$emit('update-product', id);
   },
+
 
   async mounted() {
     console.log('mounted');
@@ -175,5 +162,9 @@ v-table thead th {
 
 v-table tbody td {
   padding: 30px;
+}
+search-wrapper{
+  width: 50px;
+  position: relative;
 }
 </style>

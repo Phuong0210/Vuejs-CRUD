@@ -1,34 +1,36 @@
 <template>
   <div class="container">
 
-    <form>
+    <form class="form-input">
 
       <div class="well">
-        <h4> Add Product</h4>
+
         <div class="form-group">
-          <label class="pull-left"> Product Name </label>
-          <v-text-field :rules="rules" v-model="products.productName" placeholder="ProductName"></v-text-field>
+
+          <v-text-field :rules="rules" v-model="product.productName" placeholder="ProductName"></v-text-field>
 
         </div>
         <div class="form-group">
-          <label class="pull-left"> Price</label>
-          <v-text-field :rules="rules" v-model="products.price" placeholder="Price"></v-text-field>
+
+          <v-text-field :rules="rules" v-model="product.price" placeholder="Price"></v-text-field>
         </div>
         <div class="form-group">
-          <label class="pull-left"> Description </label>
-          <v-text-field :rules="rules" v-model="products.description" placeholder="Description"></v-text-field>
+
+          <v-text-field :rules="rules" v-model="product.description" placeholder="Description"></v-text-field>
         </div>
       </div>
 
-      <router-link to="/users">
-        <v-btn type="submit" @click="addToAPI()">
+      <router-link to="/">
+        <v-btn
+            class="show-button"
+            flat color="blue"
+            type="submit"
+            @click="submitProduct()">
+
           Submit
         </v-btn>
-
       </router-link>
-      <v-btn>
-        go
-      </v-btn>
+
     </form>
 
   </div>
@@ -39,22 +41,35 @@
 import axios from 'axios';
 
 export default {
-  name: 'hello',
+  name: 'InsertProduct',
+
+  props: {
+    updatingProduct: Object,
+  },
+
   data() {
     return {
       msg: '',
-      products: { productName: '', price: '', description: '' },
+      product: { productName: '', price: '', description: '' },
 
     }
   },
 
+  watch: {
+    updatingProduct(product) {
+      if (product) {
+        this.product = product;
+      }
+    }
+  },
+
   methods: {
-    addToAPI() {
+  submitProduct() {
 
       let newProduct = {
-        productName: this.products.productName,
-        price:this.products.price,
-        description: this.products.description
+        productName: this.product.productName,
+        price:this.product.price,
+        description: this.product.description
 
 
       }
@@ -68,15 +83,29 @@ export default {
 
           });
 
+    },
+    updateProduct(id) {
+      let apiURL = `http://localhost:8090/api/v1/Products/` + id;
+      axios.get(apiURL).then(response => {
+        console.log('res', response)
+        this.updatingProduct = response.data;
+        console.log(this.updatingProduct)
+      })
+          .catch(function (error) {
+            console.log(error.response)
+          })
     }
-
-
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.form-input{
+  width: 50%;
+  margin: 0 auto;
+  position: relative;
+}
 h1,
 h2 {
   font-weight: normal;
@@ -94,5 +123,8 @@ li {
 
 a {
   color: #42b983;
+}
+.show-button{
+  border: #0a0a0a solid 1px;
 }
 </style>
